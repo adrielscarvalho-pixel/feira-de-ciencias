@@ -251,7 +251,40 @@
   .dica small { display: block; margin-top: 1.4em; font-size: .62em; letter-spacing: .2em; opacity: .55; }
 
   /* Legenda */
-  #legenda { padding: calc(var(--flagH) + 2vh) 5vw calc(40px + 13vh); }
+  #legenda { padding: calc(var(--flagH) + 2vh) 5vw calc(40px + 13vh); align-content: center; row-gap: 4.5vh; }
+
+  /* Título da seção (ex.: Cultura do Brasil) */
+  .secao { display: flex; flex-direction: column; align-items: center; gap: 1.4vh; text-align: center; }
+  .secao[hidden], .rotulo[hidden] { display: none; }
+  .secao.entra { animation: sobe .9s cubic-bezier(.2, .8, .2, 1) both; }
+  .secao h2 {
+    margin: 0; display: flex; align-items: center; gap: .45em;
+    font-family: "Bungee", sans-serif; font-weight: 400; line-height: 1;
+    font-size: clamp(26px, min(5.2vw, 8.5vh), 84px);
+    color: var(--creme);
+    text-shadow: .05em .05em 0 var(--acc), .1em .1em 0 #0b0414;
+  }
+  .secao h2 svg {
+    flex: none; height: .9em; width: auto; border-radius: .08em;
+    box-shadow: .05em .05em 0 var(--acc), .1em .1em 0 #0b0414;
+    transform-origin: 0 50%;
+    animation: tremula 2.6s ease-in-out infinite;
+  }
+  @keyframes tremula { 0%, 100% { transform: rotate(-4deg) skewY(-2deg); } 50% { transform: rotate(3deg) skewY(3deg); } }
+  .por {
+    font-weight: 700; letter-spacing: .2em; text-transform: uppercase;
+    font-size: clamp(12px, 1.25vw, 18px);
+    padding: .45em 1.2em; border-radius: 999px;
+    color: var(--acc); border: 2px solid var(--acc); background: rgba(20, 8, 31, .5);
+  }
+  .rotulo {
+    display: table; margin: 0 auto 2.6vh;
+    font-family: "Bungee", sans-serif; font-size: clamp(14px, 1.6vw, 26px);
+    padding: .4em 1.1em .35em; border-radius: 999px;
+    background: var(--acc); color: var(--fundo);
+    border: 3px solid #0b0414; box-shadow: 5px 5px 0 #0b0414;
+    animation: entraBalao .7s cubic-bezier(.2, 1.4, .4, 1) both;
+  }
   .numfundo {
     position: absolute; right: -1vw; bottom: -5vh;
     font-family: "Bungee", sans-serif; font-size: 44vh; line-height: 1;
@@ -558,7 +591,9 @@
 
 <section class="tela" id="legenda">
   <div class="numfundo" id="numfundo">01</div>
+  <header class="secao" id="secao" hidden></header>
   <div class="bloco">
+    <div class="rotulo" id="rotulo" hidden></div>
     <div class="aspas" id="aspas">“</div>
     <p class="texto" id="texto"></p>
   </div>
@@ -596,7 +631,15 @@
    - Um item { fala: [...] } é o SITE FALANDO: o mascote aparece e fala
      com voz, frase por frase. "mao" = em qual frase a mãozinha 👋
      aparece (0 = primeira) e "festa" = em qual frase solta confete.
+   - secao({ titulo, por, bandeira, cor }, [textos]) cria uma SEÇÃO:
+     o título fica em cima e cada texto da lista vira uma tela embaixo.
+     bandeira: "br", "mx" ou "ar". Um texto pode ser { rotulo, texto }
+     para ganhar uma etiqueta em cima (ex.: "💡 Curiosidade").
    ===================================================================== */
+function secao(info, textos) {
+  return textos.map(t => ({ ...info, ...(typeof t === 'string' ? { texto: t } : t) }));
+}
+
 const TEXTOS = [
   "Olá! Espero que gostem do nosso trabalho da *Feira de Ciências*. Como podem ver, atrás de mim há um *site*, que eu mesmo fiz.",
   "Ele serve como *legenda*, para caso não entendam nossa fala, ou se quiserem acompanhar ao mesmo tempo.",
@@ -610,7 +653,15 @@ const TEXTOS = [
     ],
     festa: 2,
     mao: 3
-  }
+  },
+
+  ...secao({ titulo: "Cultura do Brasil", por: "Maria Clara", bandeira: "br", cor: ["#ffd23f", "#00d1b2"] }, [
+    "A cultura brasileira é muito diversa e foi formada pela influência de diferentes povos, principalmente *indígenas*, *africanos* e *europeus*. Essa mistura está presente na música, na dança, nas festas, na culinária e nos costumes do país.",
+    "Entre as principais culturas nacionais estão nossos estilos musicais, como o *samba*, o *forró*, o *frevo* e o *sertanejo*. A *capoeira* também é uma importante manifestação cultural brasileira, com forte influência africana.",
+    "O Brasil possui festas tradicionais como o *Carnaval*, as *Festas Juninas* e o *Festival de Parintins*.",
+    { rotulo: "💡 Curiosidade", texto: "Várias palavras do nosso dicionário vêm de outras línguas, como *abacaxi*, que é de origem *tupi*." },
+    "A *diversidade cultural* é uma das principais características do Brasil e ajuda a formar a identidade do país."
+  ])
 ];
 
 /* Texto que aparece quando aperta a tecla B (e B de novo volta) */
@@ -712,9 +763,34 @@ function montaTitulo(el, linhas, desloc = 0) {
 /* ---------- Legenda ---------- */
 const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+const BANDEIRAS = {
+  br: `<svg viewBox="0 0 20 14" aria-label="Bandeira do Brasil"><rect width="20" height="14" fill="#009c3b"/><polygon points="10,1.6 18.4,7 10,12.4 1.6,7" fill="#ffdf00"/><circle cx="10" cy="7" r="3.4" fill="#002776"/><path d="M6.7 6.3 Q10 5.4 13.3 7.7" stroke="#fff" stroke-width=".55" fill="none"/></svg>`,
+  mx: `<svg viewBox="0 0 21 12" aria-label="Bandeira do México"><rect width="7" height="12" fill="#006847"/><rect x="7" width="7" height="12" fill="#fff"/><rect x="14" width="7" height="12" fill="#ce1126"/><circle cx="10.5" cy="6" r="1.9" fill="#8c5a2b"/><path d="M8.7 6.8 Q10.5 9 12.3 6.8" stroke="#006847" stroke-width=".5" fill="none"/></svg>`,
+  ar: `<svg viewBox="0 0 18 12" aria-label="Bandeira da Argentina"><rect width="18" height="12" fill="#74acdf"/><rect y="4" width="18" height="4" fill="#fff"/><circle cx="9" cy="6" r="1.9" fill="none" stroke="#f6b40e" stroke-width=".6" stroke-dasharray=".45 .45"/><circle cx="9" cy="6" r="1.2" fill="#f6b40e"/></svg>`
+};
+
 function renderTexto(i) {
-  const t = TEXTOS[i];
+  const it = typeof TEXTOS[i] === 'string' ? { texto: TEXTOS[i] } : TEXTOS[i];
+  const t = it.texto;
   const el = $('texto');
+
+  // título da seção: só reanima quando muda de seção
+  const sec = $('secao');
+  const chave = it.titulo || '';
+  if (sec.dataset.chave !== chave) {
+    sec.dataset.chave = chave;
+    sec.hidden = !it.titulo;
+    if (it.titulo) {
+      sec.innerHTML = `<h2>${BANDEIRAS[it.bandeira] || ''}<span>${esc(it.titulo)}</span></h2>` +
+        (it.por ? `<span class="por">por ${esc(it.por)}</span>` : '');
+      sec.classList.remove('entra'); void sec.offsetWidth; sec.classList.add('entra');
+    }
+  }
+  $('aspas').hidden = !!it.titulo;
+  const rot = $('rotulo');
+  rot.hidden = !it.rotulo;
+  rot.textContent = it.rotulo || '';
+  if (it.rotulo) { rot.style.animation = 'none'; void rot.offsetWidth; rot.style.animation = ''; }
   const len = t.replace(/\*/g, '').length;
   const f = len < 60 ? 6 : len < 120 ? 5 : len < 200 ? 4.2 : len < 320 ? 3.5 : len < 480 ? 2.9 : len < 700 ? 2.4 : 2;
   el.style.setProperty('--f', f);
@@ -740,7 +816,8 @@ function renderTexto(i) {
   el.innerHTML = html;
   el.classList.remove('sai');
 
-  const acc = PAL[i % PAL.length];
+  const cores = it.cor ? [].concat(it.cor) : PAL;
+  const acc = cores[i % cores.length];
   document.documentElement.style.setProperty('--acc', acc);
   const n = String(i + 1).padStart(2, '0');
   $('num').textContent = n;
@@ -930,7 +1007,7 @@ function falar(tela, dados, instantaneo = false) {
 let idx = -1;
 let modoB = false;
 
-const telaDe = i => i === -1 ? 'capa' : i === TEXTOS.length ? 'fim' : typeof TEXTOS[i] === 'string' ? 'legenda' : 'fala';
+const telaDe = i => i === -1 ? 'capa' : i === TEXTOS.length ? 'fim' : TEXTOS[i].fala ? 'fala' : 'legenda';
 
 function entrar(i) {
   const t = telaDe(i);
