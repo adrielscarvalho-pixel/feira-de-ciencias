@@ -277,6 +277,29 @@
     padding: .45em 1.2em; border-radius: 999px;
     color: var(--acc); border: 2px solid var(--acc); background: rgba(20, 8, 31, .5);
   }
+  /* Tela de espera (antes de um país) */
+  #espera .centro { display: flex; flex-direction: column; align-items: center; text-align: center; padding: calc(var(--flagH) * .6) 6vw 0; }
+  .bandeira-grande {
+    width: min(30vw, 46vh); margin: 1.5vh 0 4vh;
+    filter: drop-shadow(10px 10px 0 #0b0414) drop-shadow(0 20px 40px rgba(0, 0, 0, .45));
+  }
+  .bandeira-grande svg { display: block; width: 100%; height: auto; border-radius: 4%; transform-origin: 0 50%; animation: tremula 2.6s ease-in-out infinite; }
+  .tela.ativa .bandeira-grande { animation: entraBalao 1s cubic-bezier(.2, 1.4, .4, 1) .2s both; }
+  .espera-titulo {
+    margin: 0; font-family: "Bungee", sans-serif; font-weight: 400; line-height: 1.05;
+    font-size: clamp(30px, min(6.5vw, 10vh), 110px); color: var(--creme);
+    text-shadow: .05em .05em 0 var(--acc), .1em .1em 0 #0b0414;
+  }
+  .espera-por { margin: 2.5vh 0 0; font-size: clamp(18px, min(2.6vw, 4.5vh), 40px); font-weight: 600; }
+  .espera-por b { color: var(--acc); font-weight: 800; }
+  .tela.ativa .espera-titulo { animation: sobe .9s cubic-bezier(.2, .8, .2, 1) .5s both; }
+  .tela.ativa .espera-por { animation: sobe .9s cubic-bezier(.2, .8, .2, 1) .8s both; }
+  .pontinhos { display: flex; gap: 12px; margin-top: 4vh; }
+  .pontinhos i { width: 14px; height: 14px; border-radius: 50%; background: var(--acc); animation: pulo 1.2s ease-in-out infinite; }
+  .pontinhos i:nth-child(2) { animation-delay: .15s; background: var(--creme); }
+  .pontinhos i:nth-child(3) { animation-delay: .3s; }
+  @keyframes pulo { 0%, 60%, 100% { transform: translateY(0); opacity: .6; } 30% { transform: translateY(-14px); opacity: 1; } }
+
   .rotulo {
     display: table; margin: 0 auto 2.6vh;
     font-family: "Bungee", sans-serif; font-size: clamp(14px, 1.6vw, 26px);
@@ -603,6 +626,16 @@
   </div>
 </section>
 
+<section class="tela" id="espera">
+  <div class="centro">
+    <p class="kicker">✦ a seguir ✦</p>
+    <div class="bandeira-grande" id="esperaBandeira"></div>
+    <h2 class="espera-titulo" id="esperaTitulo"></h2>
+    <p class="espera-por" id="esperaPor"></p>
+    <div class="pontinhos"><i></i><i></i><i></i></div>
+  </div>
+</section>
+
 <section class="tela fala" id="fala"></section>
 <section class="tela fala" id="falaB"></section>
 
@@ -639,6 +672,14 @@
 function secao(info, textos) {
   return textos.map(t => ({ ...info, ...(typeof t === 'string' ? { texto: t } : t) }));
 }
+/* espera(info): tela "A seguir…" que só passa com espaço/toque,
+   para dar tempo de quem vai apresentar chegar */
+function espera(info) {
+  return { ...info, espera: true };
+}
+
+const ARGENTINA = { titulo: "Cultura da Argentina", por: "João Lucas", bandeira: "ar", cor: ["#74acdf", "#f6b40e"] };
+const MEXICO    = { titulo: "Cultura do México",    por: "Bernardo",   bandeira: "mx", cor: ["#2ecc71", "#ff4d5e"] };
 
 const TEXTOS = [
   "Olá! Espero que gostem do nosso trabalho da *Feira de Ciências*. Como podem ver, atrás de mim há um *site*, que eu mesmo fiz.",
@@ -663,13 +704,15 @@ const TEXTOS = [
     "A *diversidade cultural* é uma das principais características do Brasil e ajuda a formar a identidade do país."
   ]),
 
-  ...secao({ titulo: "Cultura da Argentina", por: "João Lucas", bandeira: "ar", cor: ["#74acdf", "#f6b40e"] }, [
+  espera(ARGENTINA),
+  ...secao(ARGENTINA, [
     "A Argentina é um país localizado na *América do Sul*, cuja capital é *Buenos Aires*. Sua cultura recebeu influências *indígenas*, *espanholas* e de imigrantes de diversos países, principalmente da *Itália*.",
     "A cultura argentina é conhecida pelo *tango*, uma dança e estilo musical tradicional, e pela paixão pelo *futebol*. Os *gaúchos* argentinos também fazem parte da identidade cultural do país, representando costumes ligados à vida rural e à criação de gado.",
     "Além disso, a Argentina comemora datas importantes, como o *Dia da Independência*, em *9 de julho*. Suas tradições, sua culinária e sua música fazem do país um lugar culturalmente rico e reconhecido mundialmente."
   ]),
 
-  ...secao({ titulo: "Cultura do México", por: "Bernardo", bandeira: "mx", cor: ["#2ecc71", "#ff4d5e"] }, [
+  espera(MEXICO),
+  ...secao(MEXICO, [
     "A cultura mexicana é muito diversa, pois foi formada pela influência de diferentes povos, principalmente *indígenas* e *espanhóis*. Essa diversidade pode ser observada nos costumes do país, principalmente nas *músicas tradicionais*, na *dança* e na *culinária*.",
     "Uma tradição muito importante no México é o *Dia dos Mortos*, que acontece nos dias *1 e 2 de novembro*. Ele celebra a memória de entes queridos que já faleceram, como algum parente ou amigo.",
     "Um filme que representa muito a cultura mexicana é *Viva: A Vida é uma Festa*, que tem como tema principal o Dia dos Mortos, misturando o real e o fictício ao mesmo tempo.",
@@ -1020,7 +1063,15 @@ function falar(tela, dados, instantaneo = false) {
 let idx = -1;
 let modoB = false;
 
-const telaDe = i => i === -1 ? 'capa' : i === TEXTOS.length ? 'fim' : TEXTOS[i].fala ? 'fala' : 'legenda';
+const telaDe = i => i === -1 ? 'capa' : i === TEXTOS.length ? 'fim' : TEXTOS[i].fala ? 'fala' : TEXTOS[i].espera ? 'espera' : 'legenda';
+
+function renderEspera(i) {
+  const it = TEXTOS[i];
+  document.documentElement.style.setProperty('--acc', [].concat(it.cor || PAL)[0]);
+  $('esperaBandeira').innerHTML = BANDEIRAS[it.bandeira] || '';
+  $('esperaTitulo').textContent = it.titulo;
+  $('esperaPor').innerHTML = it.por ? `com <b>${esc(it.por)}</b>` : '';
+}
 
 function entrar(i) {
   const t = telaDe(i);
@@ -1029,6 +1080,7 @@ function entrar(i) {
   mostra(t);
   if (t === 'legenda') renderTexto(i);
   if (t === 'fala') falar($('fala'), TEXTOS[i]);
+  if (t === 'espera') renderEspera(i);
 }
 
 function irPara(novo) {
