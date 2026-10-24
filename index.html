@@ -661,6 +661,12 @@ const TEXTOS = [
     "O Brasil possui festas tradicionais como o *Carnaval*, as *Festas Juninas* e o *Festival de Parintins*.",
     { rotulo: "💡 Curiosidade", texto: "Várias palavras do nosso dicionário vêm de outras línguas, como *abacaxi*, que é de origem *tupi*." },
     "A *diversidade cultural* é uma das principais características do Brasil e ajuda a formar a identidade do país."
+  ]),
+
+  ...secao({ titulo: "Cultura da Argentina", por: "João Lucas", bandeira: "ar", cor: ["#74acdf", "#f6b40e"] }, [
+    "A Argentina é um país localizado na *América do Sul*, cuja capital é *Buenos Aires*. Sua cultura recebeu influências *indígenas*, *espanholas* e de imigrantes de diversos países, principalmente da *Itália*.",
+    "A cultura argentina é conhecida pelo *tango*, uma dança e estilo musical tradicional, e pela paixão pelo *futebol*. Os *gaúchos* argentinos também fazem parte da identidade cultural do país, representando costumes ligados à vida rural e à criação de gado.",
+    "Além disso, a Argentina comemora datas importantes, como o *Dia da Independência*, em *9 de julho*. Suas tradições, sua culinária e sua música fazem do país um lugar culturalmente rico e reconhecido mundialmente."
   ])
 ];
 
@@ -1026,7 +1032,9 @@ function irPara(novo) {
   idx = novo;
   pararFala();
 
-  if (telaDe(antes) === 'legenda' && telaDe(novo) === 'legenda') {
+  // dentro da mesma seção o texto só troca; ao mudar de seção (de país) entram as faixas coloridas
+  const mesmaSecao = (TEXTOS[antes] || {}).titulo === (TEXTOS[novo] || {}).titulo;
+  if (telaDe(antes) === 'legenda' && telaDe(novo) === 'legenda' && mesmaSecao) {
     $('texto').classList.add('sai');
     setTimeout(() => { if (idx === novo) renderTexto(novo); }, 280);
   } else {
