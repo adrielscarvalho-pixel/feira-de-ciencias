@@ -751,7 +751,6 @@
 </section>
 
 <section class="tela fala" id="fala"></section>
-<section class="tela fala" id="falaB"></section>
 
 <section class="tela" id="fim">
   <div class="letreiro gigante cima" data-texto="OBRIGADO ✦ GRACIAS ✦" style="--vel: 45s"></div>
@@ -768,7 +767,6 @@
 <div class="aviso" id="aviso"></div>
 <div class="controles" id="controles">
   <button data-acao="voltar" aria-label="Voltar">◀</button>
-  <button data-acao="site" aria-label="O site fala (igual à tecla B)">👋</button>
   <button data-acao="voz" aria-label="Ligar ou desligar a voz">🔊</button>
   <button data-acao="tela" aria-label="Tela cheia">⛶</button>
 </div>
@@ -800,6 +798,7 @@ const MEXICO    = { titulo: "Cultura do México",    por: "Bernardo",   bandeira
 
 const TEXTOS = [
   "Olá! Espero que gostem do nosso trabalho da *Feira de Ciências*. Como podem ver, atrás de mim há um *site*, que eu mesmo fiz.",
+  { fala: ["Olá! Eu sou o *site do trabalho deles!*"], mao: 0 },
   "Ele serve como *legenda*, para caso não entendam nossa fala, ou se quiserem acompanhar ao mesmo tempo.",
   "Vamos apresentar a *cultura* e a *culinária* de 3 países da América Latina, que são: *Brasil*, *México* e *Argentina*. Espero que gostem!",
   {
@@ -836,12 +835,6 @@ const TEXTOS = [
     { rotulo: "💡 Curiosidade", texto: "Muita gente não sabe, mas o México também usa *línguas indígenas*, que já existiam antes da chegada dos espanhóis. Hoje o país reconhece *68 línguas indígenas*, faladas por cerca de *6%* da população." }
   ])
 ];
-
-/* Texto que aparece quando aperta a tecla B (e B de novo volta) */
-const FALA_B = {
-  fala: ["Olá! Eu sou o *site do trabalho deles!*"],
-  mao: 0
-};
 
 /* Velocidade da legenda: tempo entre uma palavra e outra (ms) */
 const MS_POR_PALAVRA = 330;
@@ -1192,7 +1185,6 @@ const MASCOTE_HTML = `
     <div class="balao"><div class="nome">🔊 Site do Trabalho</div><p class="falatxt"></p></div>
   </div>`;
 $('fala').innerHTML = MASCOTE_HTML;
-$('falaB').innerHTML = MASCOTE_HTML;
 
 const temVoz = 'speechSynthesis' in window;
 let vozLigada = true, voz = null;
@@ -1312,7 +1304,6 @@ function falar(tela, dados, instantaneo = false) {
 /* ---------- Navegação ---------- */
 // -1 = capa, 0..n-1 = textos, n = tela final
 let idx = -1;
-let modoB = false;
 
 const telaDe = i => i === -1 ? 'capa' : i === TEXTOS.length ? 'fim' : TEXTOS[i].fala ? 'fala' : TEXTOS[i].espera ? 'espera' : 'legenda';
 
@@ -1352,7 +1343,7 @@ function entrar(i) {
 }
 
 function irPara(novo) {
-  if (travado || modoB) return;
+  if (travado) return;
   novo = Math.max(-1, Math.min(TEXTOS.length, novo));
   if (novo === idx) return;
   const antes = idx;
@@ -1367,21 +1358,6 @@ function irPara(novo) {
   } else {
     transicao(() => entrar(novo));
     if (telaDe(novo) === 'fim') setTimeout(confete, 1300);
-  }
-}
-
-// Tecla B: o site se apresenta; B de novo já volta mostrando o PRÓXIMO texto
-function alternaB() {
-  if (travado || !escolheu) return;
-  pararFala();
-  modoB = !modoB;
-  document.querySelector('[data-acao="site"]').classList.toggle('on', modoB);
-  if (modoB) {
-    transicao(() => { mostra('falaB'); falar($('falaB'), FALA_B); });
-  } else {
-    idx = Math.min(TEXTOS.length, idx + 1);
-    transicao(() => entrar(idx));
-    if (telaDe(idx) === 'fim') setTimeout(confete, 1300);
   }
 }
 
@@ -1423,7 +1399,7 @@ document.querySelectorAll('.opcao').forEach(b => b.addEventListener('click', e =
 }));
 
 /* ---------- Botões do modo celular ---------- */
-const ACOES = { voltar: anterior, site: alternaB, voz: alternaVoz, tela: telaCheia };
+const ACOES = { voltar: anterior, voz: alternaVoz, tela: telaCheia };
 document.querySelectorAll('.controles button').forEach(b => b.addEventListener('click', e => {
   e.stopPropagation();
   ACOES[b.dataset.acao]();
@@ -1439,7 +1415,7 @@ addEventListener('touchend', e => {
   if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
   deslizou = true;
   setTimeout(() => { deslizou = false; }, 400);
-  if (escolheu && !modoB) dx < 0 ? proximo() : anterior();
+  if (escolheu) dx < 0 ? proximo() : anterior();
 });
 
 addEventListener('keydown', e => {
@@ -1448,17 +1424,15 @@ addEventListener('keydown', e => {
     if (k === ' ' || k === 'Enter') { e.preventDefault(); escolher('pc'); }
     return;
   }
-  if (k === 'b' || k === 'B') { if (!e.repeat) alternaB(); return; }
   if (k === 'f' || k === 'F') { telaCheia(); return; }
   if (k === 'm' || k === 'M') { alternaVoz(); return; }
-  if (modoB) { if (k === ' ') e.preventDefault(); return; }
   if (k === ' ' || k === 'ArrowRight' || k === 'Enter' || k === 'PageDown' || k === 'ArrowDown') { e.preventDefault(); proximo(); }
   else if (k === 'ArrowLeft' || k === 'Backspace' || k === 'PageUp' || k === 'ArrowUp') { e.preventDefault(); anterior(); }
   else if (k === 'Home' || k === 'Escape') { if (k === 'Home') e.preventDefault(); irPara(-1); }
   else if (k === 'End') { e.preventDefault(); irPara(TEXTOS.length); }
 });
-addEventListener('click', () => { if (escolheu && !modoB && !deslizou) proximo(); });
-addEventListener('contextmenu', e => { e.preventDefault(); if (escolheu && !modoB) anterior(); });
+addEventListener('click', () => { if (escolheu && !deslizou) proximo(); });
+addEventListener('contextmenu', e => { e.preventDefault(); if (escolheu) anterior(); });
 
 /* ---------- Esconde o cursor quando parado ---------- */
 let tCursor;
