@@ -38,6 +38,7 @@
   }
   /* no celular a letra fica proporcionalmente maior */
   body.celular { --u: max(min(1vw, 1.75vh), min(1.7vw, 1.15vh)); }
+  @media (max-aspect-ratio: 1/1) { body { --u: max(min(1vw, 1.75vh), min(1.7vw, 1.15vh)); } }
   body.sem-cursor, body.sem-cursor * { cursor: none !important; }
   body.celular .so-pc, body:not(.celular) .so-cel { display: none !important; }
 
@@ -48,11 +49,17 @@
     transition: opacity 1s;
     pointer-events: none;
   }
-  .b1 { width: 48vmax; height: 48vmax; background: var(--mag); left: -14vmax; top: -16vmax; animation: flutua 19s ease-in-out infinite alternate; }
-  .b2 { width: 42vmax; height: 42vmax; background: var(--tur); right: -14vmax; bottom: -18vmax; animation: flutua 23s ease-in-out infinite alternate-reverse; }
-  .b3 { width: 34vmax; height: 34vmax; background: var(--ora); left: 30vw; bottom: -22vmax; animation: flutua 17s ease-in-out infinite alternate; }
-  .b4 { width: 36vmax; height: 36vmax; background: var(--azu); right: -8vmax; top: -18vmax; animation: flutua 26s ease-in-out infinite alternate-reverse; }
-  .b5 { width: 22vmax; height: 22vmax; background: var(--yel); left: 40vw; top: 30vh; opacity: .18; animation: flutua 21s ease-in-out infinite alternate; }
+  /* cores do fundo: mudam conforme o país da seção (body[data-tema]) */
+  body { --b1: var(--mag); --b2: var(--tur); --b3: var(--ora); --b4: var(--azu); --b5: var(--yel); }
+  body[data-tema="br"] { --b1: #00a651; --b2: #ffd23f; --b3: #00c853; --b4: #1e4fd8; --b5: #ffd23f; }
+  body[data-tema="ar"] { --b1: #4d8fd6; --b2: #f6b40e; --b3: #74acdf; --b4: #9fd0ff; --b5: #f6b40e; }
+  body[data-tema="mx"] { --b1: #00a650; --b2: #ff3b4f; --b3: #ff9f1c; --b4: #c2185b; --b5: #2ecc71; }
+  .blob { transition: opacity 1s, background-color 1.6s ease; }
+  .b1 { width: 48vmax; height: 48vmax; background: var(--b1); left: -14vmax; top: -16vmax; animation: flutua 19s ease-in-out infinite alternate; }
+  .b2 { width: 42vmax; height: 42vmax; background: var(--b2); right: -14vmax; bottom: -18vmax; animation: flutua 23s ease-in-out infinite alternate-reverse; }
+  .b3 { width: 34vmax; height: 34vmax; background: var(--b3); left: 30vw; bottom: -22vmax; animation: flutua 17s ease-in-out infinite alternate; }
+  .b4 { width: 36vmax; height: 36vmax; background: var(--b4); right: -8vmax; top: -18vmax; animation: flutua 26s ease-in-out infinite alternate-reverse; }
+  .b5 { width: 22vmax; height: 22vmax; background: var(--b5); left: 40vw; top: 30vh; opacity: .18; animation: flutua 21s ease-in-out infinite alternate; }
   body.lendo .blob { opacity: .32; }
   body.lendo .b5 { opacity: .08; }
 
@@ -281,9 +288,21 @@
   #espera .centro { display: flex; flex-direction: column; align-items: center; text-align: center; padding: calc(var(--flagH) * .6) 6vw 0; }
   .bandeira-grande {
     width: min(30vw, 46vh); margin: 1.5vh 0 4vh;
-    filter: drop-shadow(10px 10px 0 #0b0414) drop-shadow(0 20px 40px rgba(0, 0, 0, .45));
+    filter: drop-shadow(0 24px 40px rgba(0, 0, 0, .55));
   }
-  .bandeira-grande svg { display: block; width: 100%; height: auto; border-radius: 4%; transform-origin: 0 50%; animation: tremula 2.6s ease-in-out infinite; }
+  /* bandeira ondulando: fatiada em tiras que sobem e descem como pano ao vento */
+  .onda { display: flex; width: 100%; }
+  .onda i {
+    flex: 1; height: 100%; background-repeat: no-repeat; margin-right: -1px;
+    animation: ondula 2.4s ease-in-out infinite;
+    animation-delay: calc(var(--k) * -.06s);
+  }
+  .onda i:first-child { border-radius: 6px 0 0 6px; }
+  .onda i:last-child { border-radius: 0 6px 6px 0; }
+  @keyframes ondula {
+    0%, 100% { transform: translateY(calc(var(--a) * -1)); filter: brightness(1.12); }
+    50%      { transform: translateY(var(--a)); filter: brightness(.84); }
+  }
   .tela.ativa .bandeira-grande { animation: entraBalao 1s cubic-bezier(.2, 1.4, .4, 1) .2s both; }
   .espera-titulo {
     margin: 0; font-family: "Bungee", sans-serif; font-weight: 400; line-height: 1.05;
@@ -317,7 +336,24 @@
   .numfundo.troca { animation: numIn .9s cubic-bezier(.2, .9, .2, 1) both; }
   @keyframes numIn { from { opacity: 0; transform: translateX(10vw) rotate(8deg); } to { opacity: .18; transform: none; } }
 
-  .bloco { position: relative; width: min(1500px, 88vw); }
+  /* cartão de vidro com borda brilhante girando */
+  @property --ang { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+  .bloco {
+    position: relative; width: min(1500px, 88vw);
+    padding: 5vh 4vw 5.5vh; border-radius: 32px;
+    background: linear-gradient(160deg, rgba(255, 246, 230, .10), rgba(20, 8, 31, .42));
+    -webkit-backdrop-filter: blur(14px) saturate(150%); backdrop-filter: blur(14px) saturate(150%);
+    box-shadow: 0 30px 90px rgba(0, 0, 0, .4), inset 0 1px 0 rgba(255, 255, 255, .14);
+  }
+  .bloco::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 2.5px; pointer-events: none;
+    background: conic-gradient(from var(--ang), var(--acc), transparent 25%, rgba(255, 246, 230, .7) 50%, transparent 75%, var(--acc));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    animation: giraBorda 6s linear infinite;
+  }
+  @keyframes giraBorda { to { --ang: 360deg; } }
+  body.celular .bloco { padding: 4vh 6vw 4.5vh; width: 92vw; }
   .aspas {
     position: absolute; left: -.08em; top: -.42em;
     font-family: "Instrument Serif", Georgia, serif;
@@ -339,10 +375,15 @@
     animation: palavra 1s cubic-bezier(.2, .8, .2, 1) both;
     animation-delay: var(--d);
   }
+  /* destaque: cor + marca-texto que "pinta" a palavra logo depois dela aparecer */
   .w .hl {
     color: var(--acc);
-    text-decoration: underline; text-decoration-thickness: .08em; text-underline-offset: .14em;
+    text-shadow: 0 0 .6em color-mix(in srgb, var(--acc) 55%, transparent);
+    background: linear-gradient(transparent 64%, color-mix(in srgb, var(--acc) 34%, transparent) 64% 94%, transparent 94%) no-repeat 0 0 / 0% 100%;
+    animation: marca .55s cubic-bezier(.3, .7, .3, 1) forwards;
+    animation-delay: calc(var(--d) + .4s);
   }
+  @keyframes marca { to { background-size: 100% 100%; } }
   @keyframes palavra {
     from { opacity: 0; transform: translateY(.45em) rotate(2deg); filter: blur(8px); }
     to   { opacity: 1; transform: none; filter: none; }
@@ -572,8 +613,74 @@
   }
   .aviso.on { opacity: 1; }
 
+  /* ---------- Céu de partículas (canvas) ---------- */
+  #ceu { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+
+  /* ---------- Holofotes de palco ---------- */
+  .holofote {
+    position: fixed; bottom: -8vh; width: 70vmax; height: 130vmax; z-index: 2; pointer-events: none;
+    background: conic-gradient(from -11deg at 50% 100%, transparent 0deg, var(--cor) 11deg, transparent 22deg);
+    transform-origin: 50% 100%;
+    mix-blend-mode: screen; filter: blur(18px); opacity: .32;
+    transition: opacity 1s;
+  }
+  .holofote.esq { left: -40vmax; --cor: var(--b2); animation: varre 9s ease-in-out infinite alternate; }
+  .holofote.dir { right: -40vmax; --cor: var(--b1); animation: varre 11s ease-in-out infinite alternate-reverse; }
+  @keyframes varre { from { transform: rotate(8deg); } to { transform: rotate(48deg); } }
+  .holofote.dir { scale: -1 1; }
+  body.lendo .holofote { opacity: .14; }
+
+  /* ---------- Letreiros que rolam ---------- */
+  .letreiro { position: absolute; left: 0; right: 0; overflow: hidden; white-space: nowrap; pointer-events: none; }
+  .letreiro .trilho { display: inline-flex; animation: rola var(--vel, 40s) linear infinite; }
+  .letreiro.ao-contrario .trilho { animation-direction: reverse; }
+  .letreiro span { font-family: "Bungee", sans-serif; padding-right: .5em; }
+  @keyframes rola { to { transform: translateX(-50%); } }
+
+  /* fitas cruzadas da capa */
+  .fita {
+    left: -5vw; right: -5vw; bottom: calc(40px + 3vh);
+    font-size: clamp(15px, 2vw, 32px); padding: .32em 0 .25em;
+    border-block: 4px solid #0b0414;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, .4);
+  }
+  .fita.um { background: var(--mag); color: var(--fundo); transform: rotate(-2.6deg); z-index: 2; }
+  .fita.dois { background: var(--yel); color: var(--fundo); transform: rotate(2.2deg); bottom: calc(40px + 3vh + 4px); }
+  .tela.ativa .fita { animation: entraFita 1s cubic-bezier(.2, .9, .2, 1) 1.6s both; }
+  @keyframes entraFita { from { opacity: 0; translate: 0 120%; } to { opacity: 1; translate: 0 0; } }
+  #capa .dica { bottom: calc(40px + 3vh + 5.6em + 2vh); }
+
+  /* letreiro gigante vazado (telas de espera e final) */
+  .gigante { font-size: min(22vh, 18vw); line-height: 1; color: transparent; -webkit-text-stroke: 2px rgba(255, 246, 230, .16); }
+  .gigante.cima { top: calc(var(--flagH) + 1vh); }
+  .gigante.baixo { bottom: calc(40px + 2vh); -webkit-text-stroke-color: color-mix(in srgb, var(--acc) 40%, transparent); }
+  #espera .centro, #fim .miolo { position: relative; z-index: 1; }
+
+  /* brilho pulsando atrás do título */
+  .aura {
+    position: absolute; left: 50%; top: 50%; width: min(110vw, 1400px); aspect-ratio: 2 / 1;
+    translate: -50% -50%; pointer-events: none;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--b1) 45%, transparent), transparent);
+    animation: pulsa 4s ease-in-out infinite;
+  }
+  @keyframes pulsa { 0%, 100% { opacity: .55; scale: .92; } 50% { opacity: 1; scale: 1.06; } }
+
+  /* sol que gira no meio da transição */
+  .wipe-sol {
+    position: absolute; left: 50%; top: 50%; z-index: 1;
+    width: min(38vmin, 360px); aspect-ratio: 1; translate: -50% -50%; border-radius: 50%;
+    background: radial-gradient(circle, #0b0414 0 30%, var(--creme) 31% 37%, transparent 38%),
+                repeating-conic-gradient(var(--creme) 0 7deg, transparent 7deg 22.5deg);
+    -webkit-mask: radial-gradient(circle, #000 0 69%, transparent 70%); mask: radial-gradient(circle, #000 0 69%, transparent 70%);
+    transform: scale(0) rotate(-200deg);
+    transition: transform .45s cubic-bezier(.2, 1.5, .4, 1) .2s;
+  }
+  .wipe.in .wipe-sol { transform: scale(1) rotate(0deg); }
+  .wipe.out .wipe-sol { transform: scale(0) rotate(200deg); transition: transform .35s cubic-bezier(.6, 0, .8, .4) 0s; }
+  .wipe.reset .wipe-sol { transition: none; }
+
   @media (prefers-reduced-motion: reduce) {
-    .grao, .forma, .bandeira, .sol, .sol2, .faixa { animation: none !important; }
+    .grao, .forma, .bandeira, .sol, .sol2, .faixa, .holofote, .trilho, .onda i { animation: none !important; }
   }
 </style>
 </head>
@@ -583,6 +690,8 @@
 
 <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div><div class="blob b5"></div>
 <div class="formas" id="formas"></div>
+<canvas id="ceu"></canvas>
+<div class="holofote esq"></div><div class="holofote dir"></div>
 <div class="vinheta"></div>
 <div class="grao"></div>
 
@@ -603,6 +712,7 @@
   <div class="sol"></div>
   <div class="sol2"></div>
   <div class="miolo">
+    <div class="aura"></div>
     <h1 class="titulo" id="titulo"></h1>
     <p class="sub"><span class="traco"></span><span>O idioma visual de uma <b class="grad">América Latina</b></span><span class="traco"></span></p>
   </div>
@@ -610,6 +720,8 @@
     <span class="so-pc">aperte <kbd>espaço</kbd> para começar<small>F = tela cheia</small></span>
     <span class="so-cel"><kbd>toque</kbd> na tela para começar<small>deslize para o lado para voltar</small></span>
   </div>
+  <div class="letreiro fita dois ao-contrario" data-texto="CULTURA ✦ CULINÁRIA ✦ MÚSICA ✦ FESTAS ✦ TRADIÇÕES ✦" style="--vel: 34s"></div>
+  <div class="letreiro fita um" data-texto="BRASIL ✦ MÉXICO ✦ ARGENTINA ✦ AMÉRICA LATINA ✦" style="--vel: 26s"></div>
 </section>
 
 <section class="tela" id="legenda">
@@ -627,6 +739,8 @@
 </section>
 
 <section class="tela" id="espera">
+  <div class="letreiro gigante cima" id="esperaLetreiro1" style="--vel: 50s"></div>
+  <div class="letreiro gigante baixo ao-contrario" id="esperaLetreiro2" style="--vel: 60s"></div>
   <div class="centro">
     <p class="kicker">✦ a seguir ✦</p>
     <div class="bandeira-grande" id="esperaBandeira"></div>
@@ -640,7 +754,10 @@
 <section class="tela fala" id="falaB"></section>
 
 <section class="tela" id="fim">
+  <div class="letreiro gigante cima" data-texto="OBRIGADO ✦ GRACIAS ✦" style="--vel: 45s"></div>
+  <div class="letreiro gigante baixo ao-contrario" data-texto="BRASIL ✦ ARGENTINA ✦ MÉXICO ✦" style="--vel: 55s"></div>
   <div class="miolo">
+    <div class="aura"></div>
     <h2 class="titulo" id="tituloFim"></h2>
     <p class="sub"><span class="traco"></span><span>pela atenção · <b class="grad">¡gracias!</b></span><span class="traco"></span></p>
   </div>
@@ -894,7 +1011,8 @@ function montaBarra() {
 
 /* ---------- Transições ---------- */
 const wipe = $('wipe');
-wipe.innerHTML = Array.from({ length: 6 }, (_, j) => `<i style="--i:${j};background-color:${PAL[j]}"></i>`).join('');
+wipe.innerHTML = Array.from({ length: 6 }, (_, j) => `<i style="--i:${j};background-color:${PAL[j]}"></i>`).join('') +
+  '<div class="wipe-sol"></div>';
 let travado = false;
 
 function transicao(trocar) {
@@ -918,7 +1036,140 @@ function mostra(id) {
   telaAtual = id;
   document.querySelectorAll('.tela').forEach(t => t.classList.toggle('ativa', t.id === id));
   document.body.classList.toggle('lendo', id !== 'capa' && id !== 'escolha');
+  fogos(id === 'fim');
 }
+
+/* ---------- Letreiros: repete o texto até encher a tela, duas vezes (para rolar sem emenda) ---------- */
+function montaLetreiro(el, texto = el.dataset.texto) {
+  const vezes = Math.max(2, Math.ceil(90 / texto.length));
+  const metade = `<span>${esc(texto.repeat(vezes))}</span>`;
+  el.innerHTML = `<div class="trilho">${metade}${metade}</div>`;
+}
+document.querySelectorAll('.letreiro[data-texto]').forEach(el => montaLetreiro(el));
+
+/* ---------- Céu de partículas: brilhos e formas que sobem devagar, com profundidade ---------- */
+const TEMAS = {
+  '': { cores: PAL, formas: ['confete', 'bola', 'brilho'] },
+  br: { cores: ['#00e676', '#ffd23f', '#4d7cff', '#fff6e6'], formas: ['losango', 'brilho', 'bola'] },
+  ar: { cores: ['#9fd0ff', '#fff6e6', '#f6b40e'], formas: ['sol', 'brilho', 'bola'] },
+  mx: { cores: ['#2ecc71', '#ff4d5e', '#ff9f1c', '#fff6e6'], formas: ['flor', 'confete', 'bola'] }
+};
+const ceu = $('ceu'), ctx = ceu.getContext('2d');
+let W = 0, H = 0, tema = TEMAS[''];
+const parts = [], faiscas = [];
+const sorteia = arr => arr[Math.floor(Math.random() * arr.length)];
+
+function dimensionaCeu() {
+  const dpr = Math.min(devicePixelRatio || 1, 1.5);
+  W = innerWidth; H = innerHeight;
+  ceu.width = W * dpr; ceu.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+function nasce(p, emQualquerLugar) {
+  p.z = rnd(.25, 1);                         // profundidade: perto = maior, mais rápido, mais nítido
+  p.x = rnd(0, W); p.y = emQualquerLugar ? rnd(0, H) : H + 30;
+  p.r = rnd(3, 9) * (p.z * 1.6);
+  p.vy = -rnd(.25, .7) * p.z; p.fase = rnd(0, 6.3);
+  p.rot = rnd(0, 6.3); p.vr = rnd(-.02, .02);
+  p.cor = sorteia(tema.cores); p.forma = sorteia(tema.formas);
+  p.fade = emQualquerLugar ? 1 : 0;
+  return p;
+}
+function desenhaForma(p, t) {
+  const r = p.r;
+  ctx.fillStyle = p.cor; ctx.strokeStyle = p.cor;
+  switch (p.forma) {
+    case 'bola': {
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 2.4);
+      g.addColorStop(0, p.cor); g.addColorStop(1, 'transparent');
+      ctx.globalAlpha *= .45; ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(0, 0, r * 2.4, 0, 6.3); ctx.fill(); break;
+    }
+    case 'confete': ctx.fillRect(-r, -r * .4, r * 2, r * .8); break;
+    case 'brilho': {
+      ctx.globalAlpha *= .6 + .4 * Math.sin(t * .004 + p.fase);
+      ctx.beginPath();
+      ctx.moveTo(0, -r * 1.6); ctx.lineTo(r * .3, -r * .3); ctx.lineTo(r * 1.6, 0); ctx.lineTo(r * .3, r * .3);
+      ctx.lineTo(0, r * 1.6); ctx.lineTo(-r * .3, r * .3); ctx.lineTo(-r * 1.6, 0); ctx.lineTo(-r * .3, -r * .3);
+      ctx.closePath(); ctx.fill(); break;
+    }
+    case 'losango':
+      ctx.beginPath(); ctx.moveTo(0, -r * 1.3); ctx.lineTo(r, 0); ctx.lineTo(0, r * 1.3); ctx.lineTo(-r, 0); ctx.closePath(); ctx.fill(); break;
+    case 'sol':
+      ctx.beginPath(); ctx.arc(0, 0, r * .55, 0, 6.3); ctx.fill();
+      ctx.lineWidth = Math.max(1, r * .18);
+      for (let a = 0; a < 12; a++) {
+        const an = a * Math.PI / 6;
+        ctx.beginPath(); ctx.moveTo(Math.cos(an) * r * .8, Math.sin(an) * r * .8);
+        ctx.lineTo(Math.cos(an) * r * 1.4, Math.sin(an) * r * 1.4); ctx.stroke();
+      }
+      break;
+    case 'flor':   // cempasúchil
+      for (let a = 0; a < 8; a++) {
+        const an = a * Math.PI / 4;
+        ctx.beginPath(); ctx.arc(Math.cos(an) * r * .7, Math.sin(an) * r * .7, r * .5, 0, 6.3); ctx.fill();
+      }
+      ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.arc(0, 0, r * .45, 0, 6.3); ctx.fill(); break;
+  }
+}
+function mudaTema(nome) {
+  if (document.body.dataset.tema === nome) return;
+  document.body.dataset.tema = nome;
+  tema = TEMAS[nome] || TEMAS[''];
+  parts.forEach(p => { p.cor = sorteia(tema.cores); p.forma = sorteia(tema.formas); p.fade = 0; });
+}
+
+/* fogos de artifício (tela final) */
+let tFogos = null;
+function estouro() {
+  const x = rnd(W * .15, W * .85), y = rnd(H * .15, H * .5);
+  const cor = sorteia(PAL), n = W < 700 ? 45 : 80;
+  for (let i = 0; i < n; i++) {
+    const an = (i / n) * 6.283 + rnd(-.05, .05), v = rnd(2, 6.5);
+    faiscas.push({ x, y, vx: Math.cos(an) * v, vy: Math.sin(an) * v, vida: 1, cor: Math.random() < .2 ? '#fff6e6' : cor });
+  }
+}
+function fogos(ligar) {
+  clearInterval(tFogos); tFogos = null;
+  if (ligar) { setTimeout(estouro, 900); tFogos = setInterval(estouro, 1100); }
+}
+
+let ultimo = performance.now();
+function anima(t) {
+  const f = Math.min(3, (t - ultimo) / 16.7); ultimo = t;
+  ctx.clearRect(0, 0, W, H);
+  for (const p of parts) {
+    p.y += p.vy * f;
+    p.x += Math.sin(t * .0006 + p.fase) * .35 * p.z * f;
+    p.rot += p.vr * f;
+    p.fade = Math.min(1, p.fade + .015 * f);
+    if (p.y < -40) nasce(p, false);
+    ctx.save();
+    ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+    ctx.globalAlpha = p.fade * (.25 + p.z * .55);
+    desenhaForma(p, t);
+    ctx.restore();
+  }
+  if (faiscas.length) {
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = faiscas.length - 1; i >= 0; i--) {
+      const s = faiscas[i];
+      s.vx *= .985; s.vy = s.vy * .985 + .06 * f;
+      s.x += s.vx * f; s.y += s.vy * f; s.vida -= .011 * f;
+      if (s.vida <= 0) { faiscas.splice(i, 1); continue; }
+      ctx.globalAlpha = s.vida;
+      ctx.fillStyle = s.cor;
+      ctx.beginPath(); ctx.arc(s.x, s.y, 2.2 + s.vida * 1.5, 0, 6.3); ctx.fill();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
+  }
+  requestAnimationFrame(anima);
+}
+dimensionaCeu();
+for (let i = 0; i < (innerWidth < 700 ? 38 : 70); i++) parts.push(nasce({}, true));
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches) requestAnimationFrame(anima);
+addEventListener('resize', dimensionaCeu);
 
 function avisa(msg) {
   const a = $('aviso');
@@ -1065,16 +1316,33 @@ let modoB = false;
 
 const telaDe = i => i === -1 ? 'capa' : i === TEXTOS.length ? 'fim' : TEXTOS[i].fala ? 'fala' : TEXTOS[i].espera ? 'espera' : 'legenda';
 
+// bandeira em tiras verticais: cada tira sobe e desce um pouco depois da outra = pano ondulando
+function bandeiraOndulante(svg, tiras = 44) {
+  if (!svg) return '';
+  const [, , w, h] = svg.match(/viewBox="([^"]+)"/)[1].split(' ').map(Number);
+  const url = 'data:image/svg+xml,' + encodeURIComponent(svg.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"'));
+  let html = '';
+  for (let k = 0; k < tiras; k++) {
+    html += `<i style="--k:${k};--a:${(k / tiras * 5).toFixed(2)}%;background-image:url('${url}');` +
+      `background-size:${tiras * 100}% 100%;background-position:${(k / (tiras - 1) * 100).toFixed(3)}% 0"></i>`;
+  }
+  return `<div class="onda" style="aspect-ratio:${w}/${h}">${html}</div>`;
+}
+
 function renderEspera(i) {
   const it = TEXTOS[i];
   document.documentElement.style.setProperty('--acc', [].concat(it.cor || PAL)[0]);
-  $('esperaBandeira').innerHTML = BANDEIRAS[it.bandeira] || '';
+  $('esperaBandeira').innerHTML = bandeiraOndulante(BANDEIRAS[it.bandeira]);
+  const nome = it.titulo.replace(/^Cultura d[aoe]s? /i, '').toUpperCase();
+  montaLetreiro($('esperaLetreiro1'), `${nome} ✦ `);
+  montaLetreiro($('esperaLetreiro2'), `${it.titulo.toUpperCase()} ✦ `);
   $('esperaTitulo').textContent = it.titulo;
   $('esperaPor').innerHTML = it.por ? `com <b>${esc(it.por)}</b>` : '';
 }
 
 function entrar(i) {
   const t = telaDe(i);
+  mudaTema((TEXTOS[i] || {}).bandeira || '');
   if (t === 'capa') montaTitulo($('titulo'), ['Feira de', 'Ciências']);
   if (t === 'fim') montaTitulo($('tituloFim'), ['Obrigado!'], 3);
   mostra(t);
