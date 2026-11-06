@@ -4,6 +4,7 @@
     "ignore": [
       "firebase.json",
       "publicar.ps1",
+      "**/*.pptx",
       "**/.*",
       "**/node_modules/**"
     ],
