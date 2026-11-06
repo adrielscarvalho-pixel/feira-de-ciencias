@@ -18,8 +18,8 @@ const TEXTOS_SITE = new Function(HTML.slice(ini, fimTextos + 3) + '\nreturn TEXT
 const hex = c => c.replace('#', '').toUpperCase();
 let nFala = 0;
 const FALAS = [];   // frases que o falas.ps1 grava com a voz da Maria
-// as telas de fotos da culinária (que dependem de internet) ficam só no site
-const TEXTOS = TEXTOS_SITE.filter(t => !(t && t.fotos)).map(t => {
+// as fotos da culinária (dependem de internet) e a roleta ficam só no site
+const TEXTOS = TEXTOS_SITE.filter(t => !(t && (t.fotos || t.roleta))).map(t => {
   if (typeof t === 'string') return { texto: t };
   const it = { ...t };
   if (it.cor) it.cor = [].concat(it.cor).map(hex);

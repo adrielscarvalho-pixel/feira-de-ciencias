@@ -769,6 +769,51 @@
     .polaroid { padding: 2vw 2vw 5vw; }
   }
 
+  /* ---------- Roleta da comida ---------- */
+  #roleta { padding: calc(var(--flagH) + 1vh) 4vw calc(40px + 2.5vh); grid-template-rows: auto 1fr auto; align-content: stretch; gap: 1.5vh; }
+  #roleta .titulo { --t: min(7.5vw, 11vh); text-align: center; }
+  .roda-area { position: relative; display: grid; place-items: center; min-height: 0; }
+  .roda-zoom {
+    position: relative; height: min(54vh, 86vw); aspect-ratio: 1;
+    transition: transform .7s cubic-bezier(.3, .7, .3, 1);
+  }
+  .roda-zoom.girando { transform: scale(1.55); transition: transform .45s cubic-bezier(.3, .7, .3, 1); }
+  .tela.ativa .roda-area { animation: surgeRoda 1.1s cubic-bezier(.2, 1.3, .4, 1) .4s both; }
+  @keyframes surgeRoda { from { opacity: 0; transform: scale(.2) rotate(-200deg); } to { opacity: 1; transform: none; } }
+  .roda { width: 100%; height: 100%; filter: drop-shadow(0 30px 50px rgba(0, 0, 0, .6)); will-change: transform; }
+  .roda.borrada { filter: blur(1.6px) drop-shadow(0 30px 50px rgba(0, 0, 0, .6)); }
+  .roda svg { width: 100%; height: 100%; display: block; }
+  .lampada { animation: pisca-lampada .5s steps(1) infinite; }
+  .lampada:nth-of-type(even) { animation-delay: .25s; }
+  .girando .lampada { animation-duration: .12s; }
+  @keyframes pisca-lampada { 0% { fill: #fff6e6; } 50% { fill: #ffd23f; } }
+  .ponteiro {
+    position: absolute; left: 50%; top: -6%; width: 11%; translate: -50% 0; z-index: 2;
+    filter: drop-shadow(0 6px 8px rgba(0, 0, 0, .5)); transform-origin: 50% 20%;
+  }
+  .ponteiro.bate { animation: bate .09s ease-out; }
+  @keyframes bate { 50% { transform: rotate(-14deg); } }
+  .resultado {
+    position: absolute; left: 50%; top: 50%; z-index: 3; width: 42%; aspect-ratio: 1; translate: -50% -50%;
+    display: grid; place-items: center; align-content: center; border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #fffdf7, #ffe9b3); border: .5vh solid #0b0414;
+    box-shadow: 0 0 0 1vh #ff2e88, 0 0 80px rgba(255, 210, 63, .8), 0 20px 50px rgba(0, 0, 0, .5);
+    color: #14081f; opacity: 0; scale: 0; pointer-events: none;
+  }
+  .resultado.mostra { animation: resultado .8s cubic-bezier(.2, 1.6, .4, 1) forwards; }
+  @keyframes resultado { from { opacity: 0; scale: 0; rotate: -30deg; } to { opacity: 1; scale: 1; rotate: 0deg; } }
+  .resultado small { font-weight: 800; letter-spacing: .25em; text-transform: uppercase; font-size: clamp(11px, 1.6vh, 18px); }
+  .resultado b { font-family: "Bungee", sans-serif; font-weight: 400; line-height: 1; font-size: min(11vh, 17vw); color: #ff2e88; text-shadow: .04em .04em 0 #0b0414; }
+  .roleta-pe { display: flex; flex-direction: column; align-items: center; gap: 1vh; }
+  .historico { display: flex; gap: .5em; flex-wrap: wrap; justify-content: center; min-height: 2.2em; font-size: clamp(13px, 1.4vw, 20px); }
+  .historico span {
+    width: 2.2em; height: 2.2em; border-radius: 50%; display: grid; place-items: center;
+    font-family: "Bungee", sans-serif; color: #14081f; background: var(--c); border: 2px solid #0b0414;
+    animation: entraBalao .5s cubic-bezier(.2, 1.5, .4, 1) both;
+  }
+  .dica-roleta { margin: 0; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; font-size: clamp(12px, 1.2vw, 18px); opacity: .8; }
+  .dica-roleta kbd { font-size: .95em; }
+
   /* créditos na tela final */
   .creditos { display: flex; flex-wrap: wrap; justify-content: center; gap: 1em; margin-top: 4vh; font-size: clamp(14px, 1.6vw, 26px); }
   .credito {
@@ -856,6 +901,21 @@
   </div>
   <div class="mural" id="fotosMural"></div>
   <p class="fotos-cred" id="fotosCred"></p>
+</section>
+
+<section class="tela" id="roleta">
+  <h2 class="titulo" id="tituloRoleta"></h2>
+  <div class="roda-area">
+    <div class="roda-zoom" id="rodaZoom">
+      <div class="roda" id="roda"></div>
+      <svg class="ponteiro" id="ponteiro" viewBox="0 0 60 70" aria-hidden="true"><path d="M30 68 L4 14 Q2 4 12 4 H48 Q58 4 56 14 Z" fill="#ff2e88" stroke="#0b0414" stroke-width="5" stroke-linejoin="round"/><circle cx="30" cy="20" r="7" fill="#fff6e6"/></svg>
+      <div class="resultado" id="resultado"><small>número</small><b id="resultadoNum"></b></div>
+    </div>
+  </div>
+  <div class="roleta-pe">
+    <div class="historico" id="historico"></div>
+    <p class="dica-roleta"><span class="so-pc">aperte <kbd>espaço</kbd> para girar</span><span class="so-cel"><kbd>toque</kbd> para girar</span></p>
+  </div>
 </section>
 
 <section class="tela fala" id="fala"></section>
@@ -977,7 +1037,10 @@ const TEXTOS = [
     ],
     nome: "Guacamole", pais: "México", bandeira: "mx", cor: ["#2ecc71", "#ff4d5e"],
     desc: "Pasta de *abacate* mexicana, servida com *nachos* crocantes!"
-  }
+  },
+
+  /* roleta: espaço/clique gira; seta → (ou deslizar) vai para o Obrigado */
+  { roleta: 12 }
 ];
 
 /* Velocidade da legenda: tempo entre uma palavra e outra (ms) */
@@ -1554,7 +1617,7 @@ function falar(tela, dados, instantaneo = false) {
 let idx = -1;
 
 const telaDe = i => i === -1 ? 'capa' : i === TEXTOS.length ? 'fim' :
-  TEXTOS[i].fala ? 'fala' : TEXTOS[i].espera ? 'espera' : TEXTOS[i].fotos ? 'fotos' : 'legenda';
+  TEXTOS[i].fala ? 'fala' : TEXTOS[i].espera ? 'espera' : TEXTOS[i].fotos ? 'fotos' : TEXTOS[i].roleta ? 'roleta' : 'legenda';
 
 // culinária: nome do prato + 3 fotos caindo como polaroides
 function renderFotos(i) {
@@ -1575,6 +1638,85 @@ function renderFotos(i) {
 }
 // já baixa as fotos ao abrir o site, para elas aparecerem na hora certa
 TEXTOS.forEach(t => (t.fotos || []).forEach(f => { new Image().src = f.src; }));
+
+/* ---------- Roleta da comida ---------- */
+const N_ROLETA = (TEXTOS.find(t => t.roleta) || {}).roleta || 12;
+const FATIA = 360 / N_ROLETA;
+let rotRoleta = 0, girandoRoleta = false, sorteados = [];
+
+(function montaRoda() {
+  const pt = (ang, r) => { const a = ang * Math.PI / 180; return `${(Math.sin(a) * r).toFixed(2)},${(-Math.cos(a) * r).toFixed(2)}`; };
+  let s = '<svg viewBox="-210 -210 420 420" aria-hidden="true">';
+  s += '<circle r="205" fill="#0b0414"/><circle r="196" fill="#ffd23f"/><circle r="186" fill="#0b0414"/>';
+  for (let k = 0; k < N_ROLETA; k++) {
+    const a0 = k * FATIA, a1 = a0 + FATIA, meio = a0 + FATIA / 2;
+    s += `<path d="M0,0 L${pt(a0, 180)} A180,180 0 0 1 ${pt(a1, 180)} Z" fill="${PAL[k % PAL.length]}" stroke="#0b0414" stroke-width="3"/>`;
+    s += `<g transform="rotate(${meio}) translate(0 -128)"><text text-anchor="middle" dominant-baseline="central" font-family="Bungee, Impact, sans-serif" font-size="40" fill="#fff6e6" stroke="#0b0414" stroke-width="7" paint-order="stroke">${k + 1}</text></g>`;
+  }
+  s += '<g>';
+  for (let k = 0; k < 24; k++) { const [x, y] = pt(k * 15, 196).split(','); s += `<circle class="lampada" cx="${x}" cy="${y}" r="5.5" fill="#fff6e6"/>`; }
+  s += '</g>';
+  s += '<circle r="40" fill="#fff6e6" stroke="#0b0414" stroke-width="6"/><circle r="22" fill="#ff2e88" stroke="#0b0414" stroke-width="4"/>';
+  $('roda').innerHTML = s + '</svg>';
+})();
+
+function mostraHistorico() {
+  $('historico').innerHTML = sorteados.map(n => `<span style="--c:${PAL[(n - 1) % PAL.length]}">${n}</span>`).join('');
+}
+function renderRoleta() {
+  montaTitulo($('tituloRoleta'), ['Roleta da comida!']);
+  $('resultado').classList.remove('mostra');
+  mostraHistorico();
+}
+
+function girar() {
+  if (girandoRoleta || travado) return;
+  // sorteia sem repetir até saírem todos os números
+  let livres = Array.from({ length: N_ROLETA }, (_, k) => k + 1).filter(n => !sorteados.includes(n));
+  if (!livres.length) { sorteados = []; mostraHistorico(); livres = Array.from({ length: N_ROLETA }, (_, k) => k + 1); }
+  const n = sorteia(livres);
+  const centro = (n - 1) * FATIA + FATIA / 2;
+  const ini = rotRoleta;
+  const delta = (12 + Math.floor(Math.random() * 4)) * 360 + (((-centro - ini) % 360) + 360) % 360;
+  const roda = $('roda'), zoom = $('rodaZoom'), ponteiro = $('ponteiro');
+  girandoRoleta = true;
+  $('resultado').classList.remove('mostra');
+  zoom.classList.add('girando');
+  roda.classList.add('borrada');
+  novoCanal();
+  const D = 5000, t0 = performance.now();
+  let fatiaAntes = Math.floor(ini / FATIA);
+  const quadro = agora => {
+    const p = Math.min(1, (agora - t0) / D);
+    const e = 1 - Math.pow(1 - p, 4);                 // começa muito rápido e vai freando
+    rotRoleta = ini + delta * e;
+    roda.style.transform = `rotate(${rotRoleta}deg)`;
+    const fatia = Math.floor(rotRoleta / FATIA);
+    if (fatia !== fatiaAntes) {                        // "tec" do ponteiro a cada número que passa
+      fatiaAntes = fatia;
+      tique(0, .9, .9);
+      ponteiro.classList.remove('bate'); void ponteiro.offsetWidth; ponteiro.classList.add('bate');
+    }
+    if (p > .6) roda.classList.remove('borrada');
+    if (p < 1) return requestAnimationFrame(quadro);
+    // 5 segundos depois: o zoom volta ao normal e o número aparece
+    zoom.classList.remove('girando');
+    setTimeout(() => {
+      $('resultadoNum').textContent = n;
+      const r = $('resultado'); r.classList.remove('mostra'); void r.offsetWidth; r.classList.add('mostra');
+      confete(140);
+      sorteados.push(n);
+      mostraHistorico();
+      if (vozLigada && temVoz && voz) {
+        const u = new SpeechSynthesisUtterance(`Número ${n}!`);
+        u.voice = voz; u.lang = voz.lang; u.pitch = 1.15;
+        speechSynthesis.cancel(); speechSynthesis.speak(u);
+      }
+      girandoRoleta = false;
+    }, 650);
+  };
+  requestAnimationFrame(quadro);
+}
 
 // bandeira em tiras verticais: cada tira sobe e desce um pouco depois da outra = pano ondulando
 function bandeiraOndulante(svg, tiras = 44, leve = false) {
@@ -1625,10 +1767,11 @@ function entrar(i) {
   if (t === 'fala') falar($('fala'), TEXTOS[i]);
   if (t === 'espera') renderEspera(i);
   if (t === 'fotos') renderFotos(i);
+  if (t === 'roleta') renderRoleta(i);
 }
 
 function irPara(novo) {
-  if (travado) return;
+  if (travado || girandoRoleta) return;
   novo = Math.max(-1, Math.min(TEXTOS.length, novo));
   if (novo === idx) return;
   const antes = idx;
@@ -1649,7 +1792,9 @@ function irPara(novo) {
   }
 }
 
-const proximo = () => irPara(idx + 1);
+// na roleta, espaço/clique/toque giram; seta → e deslizar o dedo passam para a próxima tela
+const proximo = () => telaDe(idx) === 'roleta' && telaAtual === 'roleta' ? girar() : irPara(idx + 1);
+const avanca = () => irPara(idx + 1);
 const anterior = () => irPara(idx - 1);
 
 function telaCheia() {
@@ -1706,7 +1851,7 @@ addEventListener('touchend', e => {
   if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
   deslizou = true;
   setTimeout(() => { deslizou = false; }, 400);
-  if (escolheu) dx < 0 ? proximo() : anterior();
+  if (escolheu) dx < 0 ? avanca() : anterior();
 });
 
 addEventListener('keydown', e => {
@@ -1717,7 +1862,8 @@ addEventListener('keydown', e => {
   }
   if (k === 'f' || k === 'F') { telaCheia(); return; }
   if (k === 'm' || k === 'M') { alternaVoz(); return; }
-  if (k === ' ' || k === 'ArrowRight' || k === 'Enter' || k === 'PageDown' || k === 'ArrowDown') { e.preventDefault(); proximo(); }
+  if (k === ' ' || k === 'Enter') { e.preventDefault(); proximo(); }
+  else if (k === 'ArrowRight' || k === 'PageDown' || k === 'ArrowDown') { e.preventDefault(); avanca(); }
   else if (k === 'ArrowLeft' || k === 'Backspace' || k === 'PageUp' || k === 'ArrowUp') { e.preventDefault(); anterior(); }
   else if (k === 'Home' || k === 'Escape') { if (k === 'Home') e.preventDefault(); irPara(-1); }
   else if (k === 'End') { e.preventDefault(); irPara(TEXTOS.length); }
