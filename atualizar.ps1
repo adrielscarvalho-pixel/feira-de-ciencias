@@ -1,4 +1,4 @@
-# Atualiza TUDO depois de mudar o site:
+﻿# Atualiza TUDO depois de mudar o site:
 #   1. gera de novo o PowerPoint (lendo os textos do index.html)
 #   2. envia para o GitHub (GitHub Pages)
 #   3. publica no Firebase (idioma-visual.web.app)
