@@ -733,6 +733,42 @@
   .eq i:nth-child(3) { animation-delay: -.1s; } .eq i:nth-child(4) { animation-delay: -.7s; }
   @keyframes eq { from { transform: scaleY(.2); } to { transform: scaleY(1); } }
 
+  /* ---------- Culinária: mural de fotos ---------- */
+  #fotos { padding: calc(var(--flagH) + 1.5vh) 4vw calc(40px + 5vh); grid-template-rows: auto 1fr; align-content: stretch; }
+  .fotos-info { text-align: center; }
+  .fotos-info .kicker { display: inline-flex; align-items: center; gap: .6em; }
+  .fotos-info .kicker svg { height: 1.3em; width: auto; border-radius: 3px; }
+  .fotos-nome {
+    margin: .4vh 0 1vh; font-family: "Bungee", sans-serif; font-weight: 400; line-height: 1;
+    font-size: clamp(40px, min(8vw, 12vh), 150px);
+    background: linear-gradient(90deg, var(--acc), var(--creme), var(--c2), var(--acc)); background-size: 300% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(.05em .05em 0 #0b0414);
+  }
+  .tela.ativa .fotos-nome { animation: brilho 6s linear infinite, sobe .9s cubic-bezier(.2, .8, .2, 1) .2s both; }
+  .fotos-desc { margin: 0; font-weight: 700; font-size: clamp(18px, min(2.4vw, 4vh), 40px); text-shadow: 0 3px 20px rgba(0, 0, 0, .5); }
+  .mural { position: relative; width: min(1400px, 92vw); height: 100%; min-height: 34vh; justify-self: center; margin-top: 2vh; }
+  .polaroid {
+    position: absolute; padding: .7vw .7vw 2.2vw; background: #fffdf7; border-radius: 6px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, .55), 0 0 0 1px rgba(0, 0, 0, .1);
+    rotate: var(--r); animation: cai-foto 1s cubic-bezier(.2, 1.3, .4, 1) both; animation-delay: var(--d);
+  }
+  .polaroid .quadro { width: 100%; height: 100%; overflow: hidden; border-radius: 2px; background: #2a1d33; }
+  .polaroid img { width: 100%; height: 100%; object-fit: cover; display: block; animation: kenburns 14s ease-in-out infinite alternate; }
+  .polaroid.p0 { left: 30%; width: 40%; top: 0; height: 100%; z-index: 2; }
+  .polaroid.p1 { left: 2%; width: 30%; top: 12%; height: 76%; z-index: 1; }
+  .polaroid.p2 { right: 2%; width: 30%; top: 8%; height: 76%; z-index: 1; }
+  .polaroid.p1 img { animation-delay: -5s; } .polaroid.p2 img { animation-delay: -9s; }
+  @keyframes cai-foto { from { opacity: 0; transform: translateY(-60vh) rotate(25deg) scale(.6); } to { opacity: 1; transform: none; } }
+  @keyframes kenburns { from { transform: scale(1); } to { transform: scale(1.14) translate(-2%, -2%); } }
+  .fotos-cred { position: absolute; right: 2vw; bottom: calc(40px + 1vh); margin: 0; font-size: 11px; opacity: .55; }
+  @media (max-aspect-ratio: 1/1) {
+    .polaroid.p0 { left: 8%; width: 84%; top: 0; height: 58%; }
+    .polaroid.p1 { left: 2%; width: 52%; top: 52%; height: 44%; }
+    .polaroid.p2 { right: 2%; width: 52%; top: 56%; height: 42%; }
+    .polaroid { padding: 2vw 2vw 5vw; }
+  }
+
   /* créditos na tela final */
   .creditos { display: flex; flex-wrap: wrap; justify-content: center; gap: 1em; margin-top: 4vh; font-size: clamp(14px, 1.6vw, 26px); }
   .credito {
@@ -812,6 +848,16 @@
   </div>
 </section>
 
+<section class="tela" id="fotos">
+  <div class="fotos-info">
+    <p class="kicker" id="fotosKicker"></p>
+    <h2 class="fotos-nome" id="fotosNome"></h2>
+    <p class="fotos-desc" id="fotosDesc"></p>
+  </div>
+  <div class="mural" id="fotosMural"></div>
+  <p class="fotos-cred" id="fotosCred"></p>
+</section>
+
 <section class="tela fala" id="fala"></section>
 
 <section class="tela" id="fim">
@@ -857,6 +903,8 @@ function secao(info, textos) {
 function espera(info) {
   return { ...info, espera: true };
 }
+/* fotos do Wikimedia Commons (licença livre, com crédito na tela) */
+const FOTO = caminho => `https://upload.wikimedia.org/wikipedia/commons/thumb/${caminho}/1280px-${caminho.split('/').pop()}`;
 
 const BRASIL    = { titulo: "Cultura do Brasil",    por: "Maria Clara", bandeira: "br", cor: ["#ffd23f", "#00d1b2"] };
 const ARGENTINA = { titulo: "Cultura da Argentina", por: "João Lucas", bandeira: "ar", cor: ["#74acdf", "#f6b40e"] };
@@ -899,7 +947,37 @@ const TEXTOS = [
     { muertos: true, texto: "Uma tradição muito importante no México é o *Dia dos Mortos*, que acontece nos dias *1 e 2 de novembro*. Ele celebra a memória de entes queridos que já faleceram, como algum parente ou amigo." },
     "Um filme que representa muito a cultura mexicana é *Viva: A Vida é uma Festa*, que tem como tema principal o Dia dos Mortos, misturando o real e o fictício ao mesmo tempo.",
     { rotulo: "💡 Curiosidade", texto: "Muita gente não sabe, mas o México também usa *línguas indígenas*, que já existiam antes da chegada dos espanhóis. Hoje o país reconhece *68 línguas indígenas*, faladas por cerca de *6%* da população." }
-  ])
+  ]),
+
+  /* ---------- hora da culinária ---------- */
+  { fala: ["Agora é hora da *culinária*!", "Por favor, levantem-se e dirijam-se para a mesa atrás de vocês!"], festa: 0, mao: 1 },
+  {
+    fotos: [
+      { src: FOTO("b/b0/BrigadeiroBrazil.jpg"), credito: "VitorTo, CC BY-SA 3.0" },
+      { src: FOTO("a/a4/Brigadeiro.jpg"), credito: "Mayra (Maych), CC BY-SA 2.0" },
+      { src: FOTO("4/44/Brigadeiro_enrolado.jpg"), credito: "Márcia Cristina Machado, CC BY-SA 4.0" }
+    ],
+    nome: "Brigadeiro", pais: "Brasil", bandeira: "br", cor: ["#ffd23f", "#00d1b2"],
+    desc: "O docinho que não pode faltar nas *festas brasileiras*!"
+  },
+  {
+    fotos: [
+      { src: FOTO("e/ec/EMPANADAS_SALTE%C3%91AS_%28MANJAR_NORTE%C3%91O%29.jpg"), credito: "Leonardovillada, CC BY-SA 4.0" },
+      { src: FOTO("9/94/Empanadas_salte%C3%B1as_1.jpg"), credito: "Gonzalo Rivero, CC BY-SA 4.0" },
+      { src: FOTO("0/0a/Empanadas_argentinas_fritas_de_pollo_%28Argentina%29.jpg"), credito: "Horacio Cambeiro, CC BY-SA 3.0" }
+    ],
+    nome: "Empanadas", pais: "Argentina", bandeira: "ar", cor: ["#74acdf", "#f6b40e"],
+    desc: "Massa recheada, *assada* ou *frita*: o salgado mais famoso da Argentina!"
+  },
+  {
+    fotos: [
+      { src: FOTO("2/2d/Guacamole_with_Tortilla_Chips_-_Colonial_Quarter%2C_Campeche.jpg"), credito: "Bernard DUPONT, CC BY-SA 2.0" },
+      { src: FOTO("e/ec/Guacamole_with_chips.jpg"), credito: "Stuart Spivack, CC BY-SA 2.0" },
+      { src: FOTO("a/a4/Guacamole_with_Homemade_Tortilla_Chips.jpg"), credito: "Robert Loescher, CC BY-SA 4.0" }
+    ],
+    nome: "Guacamole", pais: "México", bandeira: "mx", cor: ["#2ecc71", "#ff4d5e"],
+    desc: "Pasta de *abacate* mexicana, servida com *nachos* crocantes!"
+  }
 ];
 
 /* Velocidade da legenda: tempo entre uma palavra e outra (ms) */
@@ -1476,7 +1554,27 @@ function falar(tela, dados, instantaneo = false) {
 let idx = -1;
 
 const telaDe = i => i === -1 ? 'capa' : i === TEXTOS.length ? 'fim' :
-  TEXTOS[i].fala ? 'fala' : TEXTOS[i].espera ? 'espera' : 'legenda';
+  TEXTOS[i].fala ? 'fala' : TEXTOS[i].espera ? 'espera' : TEXTOS[i].fotos ? 'fotos' : 'legenda';
+
+// culinária: nome do prato + 3 fotos caindo como polaroides
+function renderFotos(i) {
+  const it = TEXTOS[i];
+  const [c1, c2] = [].concat(it.cor || PAL);
+  document.documentElement.style.setProperty('--acc', c1);
+  $('fotos').style.setProperty('--c2', c2 || c1);
+  $('fotosKicker').innerHTML = `${BANDEIRAS[it.bandeira] || ''}<span>🍽️ hora da culinária · ${esc(it.pais || '')}</span>`;
+  $('fotosNome').textContent = it.nome;
+  $('fotosDesc').innerHTML = palavrasHTML(it.desc || '', 700).html;
+  const giro = [-2, -7, 6];
+  $('fotosMural').innerHTML = it.fotos.map((f, k) =>
+    `<figure class="polaroid p${k}" style="--r:${giro[k]}deg;--d:${(.25 + [0, .35, .55][k]).toFixed(2)}s;margin:0">` +
+    `<div class="quadro"><img src="${f.src}" alt="${esc(it.nome)}" onerror="this.closest('.polaroid').style.display='none'"></div></figure>`
+  ).join('');
+  $('fotosCred').textContent = 'Fotos: ' + it.fotos.map(f => f.credito).join(' · ') + ' — Wikimedia Commons';
+  it.fotos.forEach((_, k) => tique(250 + [0, 350, 550][k] + 500, 1.2, .7));
+}
+// já baixa as fotos ao abrir o site, para elas aparecerem na hora certa
+TEXTOS.forEach(t => (t.fotos || []).forEach(f => { new Image().src = f.src; }));
 
 // bandeira em tiras verticais: cada tira sobe e desce um pouco depois da outra = pano ondulando
 function bandeiraOndulante(svg, tiras = 44, leve = false) {
@@ -1526,6 +1624,7 @@ function entrar(i) {
   if (t === 'legenda') renderTexto(i);
   if (t === 'fala') falar($('fala'), TEXTOS[i]);
   if (t === 'espera') renderEspera(i);
+  if (t === 'fotos') renderFotos(i);
 }
 
 function irPara(novo) {
