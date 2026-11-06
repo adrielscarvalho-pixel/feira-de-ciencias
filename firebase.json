@@ -5,6 +5,8 @@
       "firebase.json",
       "publicar.ps1",
       "**/*.pptx",
+      "slides/**",
+      "atualizar.ps1",
       "**/.*",
       "**/node_modules/**"
     ],

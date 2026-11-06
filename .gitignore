@@ -1,1 +1,7 @@
 .firebase/
+slides/node_modules/
+slides/assets/
+slides/base.pptx
+slides/final.pptx
+slides/plano.json
+slides/falas.json
